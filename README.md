@@ -1,3 +1,3 @@
 # htex
 
-transform html to latex
+Simple program to transform html to Tex
