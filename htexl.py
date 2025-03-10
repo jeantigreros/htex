@@ -8,6 +8,7 @@ class MyHTMLParser(HTMLParser):
         self.result = []  # List to store the formatted text
         self.in_p = False
         self.in_title = False
+        self.is_strong = False
 
     def handle_starttag(self, tag, attrs):
         if tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
@@ -18,6 +19,9 @@ class MyHTMLParser(HTMLParser):
         if tag == "p":
             self.in_p = True
 
+        if tag == "strong":
+            self.is_strong = True
+
     def handle_endtag(self, tag):
         if tag == self.current_heading:
             self.current_heading = None
@@ -27,6 +31,9 @@ class MyHTMLParser(HTMLParser):
 
         if tag == "title":
             self.in_title = False
+
+        if tag == "strong":
+            self.is_strong = False
 
     def handle_data(self, data):
         if self.current_heading == "h1":
@@ -41,6 +48,9 @@ class MyHTMLParser(HTMLParser):
         if self.in_title:
             self.result.append(f"\\title{{{data}}}")
             self.result.append("\\maketitle")
+
+        if self.is_strong:
+            self.result.append(f"\\textbf{{{data}}}")
 
 
 parsed = MyHTMLParser()
