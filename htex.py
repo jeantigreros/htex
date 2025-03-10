@@ -1,17 +1,5 @@
 from html.parser import HTMLParser
-
-# Read contents of file
-html_path = 'sample.html'
-
-with open(html_path, 'r') as file:
-    html_content = ''
-    line = file.readline()
-
-    while line:
-        html_content += line
-        line = file.readline()
-
-html = html_content
+import argparse
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
@@ -38,20 +26,35 @@ class MyHTMLParser(HTMLParser):
         if self.current_heading == "h1":
             self.result.append(f"\\section{{{data.strip()}}}")  
 
-        if self.current_heading == "h2":
+        if self.current_heading in {"h2", "h3", "h4", "h5", "h6"}:
             self.result.append(f"\\subsection{{{data.strip()}}}")  
 
         if self.in_p:
             self.result.append(f"{data}")
 
-# Example usage
-parser = MyHTMLParser()
 
+parsed = MyHTMLParser()
 
-parser.feed(html)
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', help='input [filename]')
+args = parser.parse_args()
 
-# Store result as a single text string
-output_text = "\n".join(parser.result)
+input = args.input
+with open(input, 'r') as file:
+    content = ''
+    line = file.readline()
 
-with open("output.tex", "w") as f:
-    f.write(output_text)
+    while line:
+        content += line
+        line = file.readline()
+
+html_to_transform = content 
+
+parsed.feed(html_to_transform)
+
+try:
+    output = "\n".join(parsed.result)
+    with open("output.tex", "w") as f:
+        f.write(output)
+except Exception as e:
+    print(f'Error: {e}')
