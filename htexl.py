@@ -9,6 +9,8 @@ class MyHTMLParser(HTMLParser):
         self.in_p = False
         self.in_title = False
         self.is_strong = False
+        self.is_membername = False
+        self.is_date = False
 
     def handle_starttag(self, tag, attrs):
         if tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
@@ -22,6 +24,12 @@ class MyHTMLParser(HTMLParser):
         if tag == "strong":
             self.is_strong = True
 
+        if tag == "membername":
+            self.is_membername = True
+
+        if tag == "date":
+            self.is_date = True
+
     def handle_endtag(self, tag):
         if tag == self.current_heading:
             self.current_heading = None
@@ -34,6 +42,12 @@ class MyHTMLParser(HTMLParser):
 
         if tag == "strong":
             self.is_strong = False
+
+        if tag == "membername":
+            self.is_membername = False 
+
+        if tag == "date":
+            self.is_date = False
 
     def handle_data(self, data):
         if self.current_heading == "h1":
@@ -50,7 +64,15 @@ class MyHTMLParser(HTMLParser):
             self.result.append("\\maketitle")
 
         if self.is_strong:
+            self.result.pop()
             self.result.append(f"\\textbf{{{data}}}")
+
+        if self.is_membername:
+            self.author = data.strip()
+
+        if self.is_date:
+            self.date = data.strip()
+        
 
 
 parsed = MyHTMLParser()
@@ -97,17 +119,18 @@ def insert_template(file_path, lines_to_insert, lines_to_append):
         print(f"Error: {e}")
 
 
-author = "Alexis Tigreros"
-date = "date" 
+author = parsed.author
+date = parsed.date
 file = 'output.tex'
 template_start= [
     r"\documentclass{article}",
     rf'\author{{{author}}}',
-    r"\begin{document}",
+    rf'\date{{{date}}}'
+    '\n', r"\begin{document}",
 ]
 
 template_end = [
-    r'\end{document}'
+    '\n', r'\end{document}'
 ]
 
 insert_template(file, template_start, template_end)
